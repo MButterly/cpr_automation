@@ -30,15 +30,15 @@ if __name__ == "__main__":
     # Combine 'First Name' and 'Last Name' into a 'Full Name' column
     df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
 
+    # Loop through each row in the DataFrame and add text to the specified positions
+    for index, row in df.iterrows():
+        name = row['Full Name']
 
-    # # Loop through each row in the DataFrame and add text to the specified positions
-    # for index, row in df.iterrows():
-    #     name = row['name']
-        
-    # # Add text to specified positions
-    # for name in students:
-    #     page = doc.load_page(0)
-    #     page.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))  # 100,100 indicates the location of the text insertion
+
+    # Add text to specified positions
+    for name in students:
+        page = doc.load_page(0)
+        page.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))  # 100,100 indicates the location of the text insertion
 
     print ('works after pandas')
 
