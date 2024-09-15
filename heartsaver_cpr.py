@@ -1,21 +1,33 @@
 import fitz  # PyMuPDF
+import pandas as pd
+import sys 
 
-# Open the PDF
-pdf_path = 'input.pdf'
-doc = fitz.open(pdf_path)
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <csv_path> <Date_of_Class>")
+        sys.exit(1)
 
-# List of student names and positions (page_number, x, y, name)
-students = [
-    (0, 100, 100, "Student Name 1"),
-    (0, 100, 150, "Student Name 2"),
-    # Add more as needed
-]
+    # Open the PDF
+    pdf_path = 'PDFs/Adult_BLS.pdf'
+    doc = fitz.open(pdf_path)
 
-# Add text to specified positions
-for page_num, x, y, name in students:
-    page = doc.load_page(page_num)
-    page.insert_text((x, y), name, fontsize=12, color=(0, 0, 0))  # Adjust fontsize and color
+    # Create the pandas dataframe
+    csv_path = sys.argv[2]
+    df = pd.read_csv(csv_path)
+    
+    # Combine 'First Name' and 'Last Name' into a 'Full Name' column
+    df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
 
-# Save the updated PDF
-doc.save("output.pdf")
-doc.close()
+
+    # # Loop through each row in the DataFrame and add text to the specified positions
+    # for index, row in df.iterrows():
+    #     name = row['name']
+        
+    # # Add text to specified positions
+    # for name in students:
+    #     page = doc.load_page(0)
+    #     page.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))  # 100,100 indicates the location of the text insertion
+
+    # Save the updated PDF
+    doc.save("output.pdf")
+    doc.close()
