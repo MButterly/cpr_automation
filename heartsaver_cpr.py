@@ -3,12 +3,24 @@ import pandas as pd
 import sys 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <csv_path> <Date_of_Class>")
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <csv_path>")
         sys.exit(1)
 
+    # Get course data from the user
+    course_date = input("What was the date of the class?")
+    course_type = input("What type of course was it (BLS/HSFA/HSCPR)?")
+
     # Open the PDF
-    pdf_path = 'PDFs/Adult_BLS.pdf'
+    if course_type == "BLS":
+        pdf_path = 'PDFs/Adult_BLS.pdf'
+    elif course_type == "HSFA":
+        pdf_path = 'PDFs/HSFA.pdf'
+    elif course_type == "HSCPR":
+        pdf_path = 'PDSs/HSCPR.pdf'
+    else:
+        return print("Error in choosing PDF")
+        sys.exit(2)
     doc = fitz.open(pdf_path)
 
     # Create the pandas dataframe
@@ -31,3 +43,5 @@ if __name__ == "__main__":
     # Save the updated PDF
     doc.save("output.pdf")
     doc.close()
+
+    # Create a roster
