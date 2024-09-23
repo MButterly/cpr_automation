@@ -9,22 +9,35 @@ if __name__ == "__main__":
 
     # Get course data from the user
     course_date = input("What was the date of the class? ")
-    course_type = input("What type of course was it (BLS/HSFA/HSCPR)? ")
+    course_type = input("What type of course was it (BLS/HSFACPR)? ")
 
-    # Open the PDF
+    # Create roster for the class
     if course_type == "BLS":
-        pdf_path = 'PDFs/Adult_BLS.pdf'
-    elif course_type == "HSFA":
-        pdf_path = 'PDFs/HSFA.pdf'
-    elif course_type == "HSCPR":
-        pdf_path = 'PDSs/HSCPR.pdf'
+        roster_output = fitz.open('BLS_Roster.pdf')
+    elif course_type == "HSFACPR":
+        roster_output = fitz.open('HSFACPR_Roster.pdf')
     else:
-        print("Error in choosing PDF")
+        print("Error in choosing Roster PDF")
         sys.exit(2)
-    doc = fitz.open(pdf_path)
+
+    # Open the skillsheet PDFs
+    # Create a doc to hold the outputs
+    output_skill_doc = fitz.open()
+
+    if course_type == "BLS":
+        template_doc = 'PDFs/Adult_BLS.pdf'
+    elif course_type == "HSFACPR":
+        template_doc = 'PDFs/HSFACPR.pdf'
+    else:
+        print("Error in choosing skillsheet PDF")
+        sys.exit(2)
+    template_skill_doc = fitz.open(template_doc)
+
+    # Add the date to the template
+    template_skill_doc.insert_text((500, 100), course_date, fontsize=12, color=(0, 0, 0))
 
     # Create the pandas dataframe
-    csv_path = sys.argv[2]
+    csv_path = sys.argv[1]
     df = pd.read_csv(csv_path)
     
     # Combine 'First Name' and 'Last Name' into a 'Full Name' column
@@ -34,16 +47,24 @@ if __name__ == "__main__":
     for index, row in df.iterrows():
         name = row['Full Name']
 
+        # Add text to specified positions. Keep an eye on the correct coordinates
+        filled_skill_sheet = template_skill_doc.load_page(0)
+        filled_skill_sheet.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))
 
-    # Add text to specified positions
-    for name in students:
-        page = doc.load_page(0)
-        page.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))  # 100,100 indicates the location of the text insertion
+        # Append the data to the growing output PDF
+        # Maybe this will work, maybe it won't
+        output_skill_doc.insert_pdf(filled_skill_sheet, from_page=0)
 
-    print ('works after pandas')
+        # Add the name to the roster
+        roster_output.insert_text((100,(index*100)+200), name, fontsize=12, color=(0,0,0))
+ 
+    # Save & close the skillsheet output
+    output_skill_doc.save('Skillsheets_for_' + course_type)
+    output_skill_doc.close()
 
-    # Save the updated PDF
-    doc.save("output.pdf")
-    doc.close()
+    # Save & close the roster output
+    roster_output.save('Roster_for_' + course_type)
+    roster_output.close()
 
-    # Create a roster
+    print("Don't forget to fill out the rest of the roster!")
+    print("Did you want to alphabetize the names in the roster?")
