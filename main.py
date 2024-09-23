@@ -13,9 +13,9 @@ if __name__ == "__main__":
 
     # Create roster for the class
     if course_type == "BLS":
-        roster_output = fitz.open('BLS_Roster.pdf')
+        roster_output = fitz.open('PDFs/BLS_Roster.pdf')
     elif course_type == "HSFACPR":
-        roster_output = fitz.open('HSFACPR_Roster.pdf')
+        roster_output = fitz.open('PDFs/HSFACPR_Roster.pdf')
     else:
         print("Error in choosing Roster PDF")
         sys.exit(2)
@@ -31,14 +31,14 @@ if __name__ == "__main__":
     else:
         print("Error in choosing skillsheet PDF")
         sys.exit(2)
-    template_skill_doc = fitz.open(template_doc)
 
     # Add the date to the template
-    template_skill_doc.insert_text((500, 100), course_date, fontsize=12, color=(0, 0, 0))
+    # template_skill_doc.insert_text((500, 100), course_date, fontsize=12, color=(0, 0, 0))
 
-    # Create the pandas dataframe
+    # Create the pandas dataframe and alphabetize by last name
     csv_path = sys.argv[1]
     df = pd.read_csv(csv_path)
+    df.sort_values('Last Name', inplace=True)
     
     # Combine 'First Name' and 'Last Name' into a 'Full Name' column
     df['Full Name'] = df['First Name'] + ' ' + df['Last Name']
@@ -48,15 +48,19 @@ if __name__ == "__main__":
         name = row['Full Name']
 
         # Add text to specified positions. Keep an eye on the correct coordinates
-        filled_skill_sheet = template_skill_doc.load_page(0)
-        filled_skill_sheet.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))
+        filled_skill_doc = fitz.open(template_doc)
+        filled_skill_page = filled_skill_doc.load_page(0)
+        filled_skill_page.insert_text((500, 100), course_date, fontsize=12, color=(0, 0, 0))
+        filled_skill_page.insert_text((100, 100), name, fontsize=12, color=(0, 0, 0))
 
         # Append the data to the growing output PDF
         # Maybe this will work, maybe it won't
-        output_skill_doc.insert_pdf(filled_skill_sheet, from_page=0)
+        output_skill_doc.insert_pdf(filled_skill_doc)
 
         # Add the name to the roster
-        roster_output.insert_text((100,(index*100)+200), name, fontsize=12, color=(0,0,0))
+        roster_page = roster_output.load_page(1)
+        y_position = 200 + index * 16 # This will be determined experimentally
+        roster_page.insert_text((100, y_position), name, fontsize=12, color=(0, 0, 0))
  
     # Save & close the skillsheet output
     output_skill_doc.save('Skillsheets_for_' + course_type)
