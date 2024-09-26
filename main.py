@@ -13,21 +13,22 @@ if __name__ == "__main__":
 
     # Create roster for the class
     if course_type == "BLS":
-        roster_output = fitz.open('PDFs/BLS_Roster.pdf')
+        roster_output = fitz.open('PDFs/BLS-Roster.pdf')
     elif course_type == "HS":
-        roster_output = fitz.open('PDFs/HSFACPR_Roster.pdf')
+        roster_output = fitz.open('PDFs/HSFACPR-Roster.pdf')
     else:
         print("Error in choosing Roster PDF")
         sys.exit(2)
 
     # Open the skillsheet PDFs
-    # Create a doc to hold the outputs
+    # Create a doc to hold the skillsheet outputs
     output_skill_doc = fitz.open()
 
     if course_type == "BLS":
         template_doc = 'PDFs/Adult_BLS.pdf'
     elif course_type == "HS":
-        template_doc = 'PDFs/HSFACPR.pdf'
+        template_doc = 'PDFs/HSFACPR-Skills-CPR.pdf'
+        fa_template_doc = 'PDFs/HSFACPR-Skills-FA.pdf'
     else:
         print("Error in choosing skillsheet PDF")
         sys.exit(2)
@@ -46,17 +47,24 @@ if __name__ == "__main__":
         email = row['Email']
         course_date = row['Course Date']
 
-        # Add text to specified positions. Keep an eye on the correct coordinates
+        # Add name and course date to their respective locations on form
         filled_skill_doc = fitz.open(template_doc)
         filled_skill_page = filled_skill_doc.load_page(0)
-        filled_skill_page.insert_text((475, 100), course_date, fontsize=12, color=(0, 0, 0))
-        filled_skill_page.insert_text((475, 1000), course_date, fontsize=12, color=(0, 0, 0))
-        filled_skill_page.insert_text((120, 100), name, fontsize=12, color=(0, 0, 0))
+        filled_skill_page.insert_text((450, 110), course_date, fontsize=12, color=(0, 0, 0))
+        filled_skill_page.insert_text((450, 685), course_date, fontsize=12, color=(0, 0, 0))
+        filled_skill_page.insert_text((125, 110), name, fontsize=12, color=(0, 0, 0))
 
-
-        # Append the data to the growing output PDF
-        # Maybe this will work, maybe it won't
         output_skill_doc.insert_pdf(filled_skill_doc)
+
+        # If First Aid course, add FA skillsheet and fill it out
+        if course_type == 'HS':
+            filled_fa_skill_doc = fitz.open(fa_template_doc)
+            filled_fa_skill_page = filled_fa_skill_doc.load_page(0)
+            filled_fa_skill_page.insert_text((450, 110), course_date, fontsize=12, color=(0, 0, 0))
+            filled_fa_skill_page.insert_text((450, 695), course_date, fontsize=12, color=(0, 0, 0))
+            filled_fa_skill_page.insert_text((125, 110), name, fontsize=12, color=(0, 0, 0))   
+
+            output_skill_doc.insert_pdf(filled_fa_skill_doc)
 
         # Add info to the roster
         roster_page = roster_output.load_page(1)
